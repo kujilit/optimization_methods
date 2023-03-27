@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 
 
 def is_pos_def(A):
-    print(f"lambda = {np.linalg.eigvals(A)}")
     return np.all(np.linalg.eigvals(A) > 0)
 
 
@@ -27,27 +26,36 @@ def error(x):
     return np.sqrt(vect_sum)
 
 
-def Gradient(A, x_0, eps):
+def Gradient(A, x_0, steps, eps):
     counter = 1
     x_prev = x_0
     x_next = x_prev - 1e-4 * diff(x_prev)
 
     func_sols = []
 
-    while error(x_next - x_prev) > eps:
-        counter += 1
-        print(f"Функция: {function(x_prev)}, Градиент: {diff(x_prev)}, Норма: {error(x_next - x_prev)}")
-        x_prev = x_next
-        x_next = x_prev - 1e-4 * diff(x_prev)
-        func_sols.append(function(x_prev))
-
-    if is_pos_def(A):
+    if steps == 0 and is_pos_def(A):
         print("Матрица положительно определена")
+        print(f"lambda = {np.linalg.eigvals(A)}")
+        while error(x_next - x_prev) > eps:
+            counter += 1
+            x_prev = x_next
+            x_next = x_prev - 1e-4 * diff(x_prev)
+            func_sols.append(function(x_prev))
 
-    print("Точка минимума: {0}, значение функции: {1}".format(x_prev, function(x_prev)))
-    print(f"Потребовалось итераций: {counter}, точность: {error(x_prev)}")
+    elif is_pos_def(A):
+        while counter < steps:
+            counter += 1
+            x_prev = x_next
+            x_next = x_prev - 1e-4 * diff(x_prev)
+            func_sols.append(function(x_prev))
 
-    return func_sols
+    else:
+        print("Матрица не определена положительно")
+
+    print("\nТочка минимума: {0}, значение функции: {1}".format(x_next, function(x_prev)))
+    print(f"Потребовалось итераций: {counter}, точность: {error(x_next - x_prev)}")
+
+    return func_sols, counter, x_next
 
 
 if __name__ == "__main__":
@@ -61,11 +69,17 @@ if __name__ == "__main__":
     b = np.array([1., 0., 0.5, 1.5, 1.5, 1.])
     x_0 = np.array([1.5, 0.5, 0.5, 0.5, 1., 1.])
 
-    plt.plot(Gradient(A, x_0, 1e-5))
+    func_solves, steps, x = Gradient(A, x_0, 0, 1e-7)
+    plt.plot(func_solves)
+    print(f"Результат для 1/4 итераций: {Gradient(A, x_0, round(steps/4), 1e-7)[2]}\n")
+    print(f"Результат для 1/3 итераций: {Gradient(A, x_0, round(steps / 3), 1e-7)[2]}\n")
+    print(f"Результат для 1/2 итераций: {Gradient(A, x_0, round(steps / 2), 1e-7)[2]}\n")
+
     print(f"Точное решение: {exact_solution(A, b)}")
     print(f"Значение функции в точке x*: {function(exact_solution(A, b))}")
 
     plt.grid()
     plt.xlabel("Iterations", fontdict={'family': 'serif', 'size': 15})
     plt.ylabel("f(x)", fontdict={'family': 'serif', 'size': 15})
+    plt.savefig('chart.png', bbox_inches='tight')
     plt.show()
