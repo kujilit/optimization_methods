@@ -41,6 +41,7 @@ def Gradient(A, x_0, steps, eps):
             x_prev = x_next
             x_next = x_prev - 1e-4 * diff(x_prev)
             func_sols.append(function(x_prev))
+        print(f"Погрешности метода: {abs(x_prev - exact_solution(A, b))}")
 
     elif is_pos_def(A):
         while counter < steps:
@@ -52,7 +53,8 @@ def Gradient(A, x_0, steps, eps):
     else:
         print("Матрица не определена положительно")
 
-    print("\nТочка минимума: {0}, значение функции: {1}".format(x_next, function(x_prev)))
+    print(f"\nТочка минимума: {x_next}, значение функции: {function(x_prev)}")
+    print(f"\nПогрешность функции в x: {abs(function(x_prev) - function(exact_solution(A, b)))}")
     print(f"Потребовалось итераций: {counter}, точность: {error(x_next - x_prev)}")
 
     return func_sols, counter, x_next
@@ -72,8 +74,9 @@ if __name__ == "__main__":
     func_solves, steps, x = Gradient(A, x_0, 0, 1e-7)
     plt.plot(func_solves)
     print(f"Результат для 1/4 итераций: {Gradient(A, x_0, round(steps/4), 1e-7)[2]}\n")
-    print(f"Результат для 1/3 итераций: {Gradient(A, x_0, round(steps / 3), 1e-7)[2]}\n")
     print(f"Результат для 1/2 итераций: {Gradient(A, x_0, round(steps / 2), 1e-7)[2]}\n")
+    print(f"Результат для 3/4 итераций: {Gradient(A, x_0, round(steps * 3/ 4), 1e-7)[2]}\n")
+
 
     print(f"Точное решение: {exact_solution(A, b)}")
     print(f"Значение функции в точке x*: {function(exact_solution(A, b))}")
