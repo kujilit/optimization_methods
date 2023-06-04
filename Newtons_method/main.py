@@ -1,28 +1,38 @@
 import numpy as np
 
 
+def error(x):
+    vect_sum = 0
+    for elem in x:
+        vect_sum += np.power(elem, 2)
+
+    return np.sqrt(vect_sum)
+
+
 class Solution:
 
-    def __init__(self, r, a, y, sign):
+    def __init__(self, a, r, y, sign):
         self.A = np.array([
-            [0.9833079, 1.1372474, 0.9015589, 1.1052048],
-            [0.8920470, 1.0466852, 0.8178930, 1.0121430],
-            [1.0741852, 1.2570329, 0.9872952, 1.2199821],
-            [1.0260374, 1.1960702, 0.9470140, 1.1691000]])
+            [1.8835673, 1.7911470, 1.0321892, 1.0260374],
+            [1.7911470, 1.0466852, 1.2432129, 1.1955702],
+            [1.0321892, 1.2432129, 0.8567213, 1.9470140],
+            [1.0260374, 1.1955702, 1.9470140, 1.1691000]])
         self.b = np.array([
-            [1.4173048],
-            [1.5586898],
-            [1.1403869],
-            [1.1981015]])
+            [1.2604948],
+            [1.3466698],
+            [1.1477929],
+            [1.1215815]])
         self.x_0 = np.array([
-            [1.8007446],
-            [1.9682616],
-            [1.3134242],
-            [1.6923226]])
+            [1.9873446],
+            [1.3245616],
+            [1.3123642],
+            [1.6912354]])
         self.r = r
         self.a = a
         self.y = y
         self.sign = sign
+
+        print(np.linalg.det(self.A))
 
     def f(self, x: np.ndarray):
         result = .5 * x.T.dot(self.A).dot(x) + self.b.T.dot(x)
@@ -41,11 +51,12 @@ class Solution:
         J_2 = np.append(J_2_1, J_2_2, axis=1)
         return np.append(J_1, J_2, axis=0)
 
-    def newton(self, x_k: np.ndarray, epsilon=1e-6, max_iter=30):
+    def newton(self, x_k, eps=1e-6, max_iter=30):
         x_previous = x_k
         x_current = x_previous - np.linalg.inv(self.jacobian(x_previous[0:-1])).dot(self.lagrange(x_previous[0:-1]))
         iterator = 0
-        while np.linalg.norm(x_current[0:-1] - x_previous[0:-1]) > epsilon and iterator < max_iter:
+
+        while error(x_current[0:-1] - x_previous[0:-1]) > eps and iterator < max_iter:
             iterator += 1
             x_previous = x_current
             x_current = x_previous - np.linalg.inv(self.jacobian(x_previous[0:-1])).dot(self.lagrange(x_previous[0:-1]))
@@ -59,19 +70,19 @@ class Solution:
         print(f"x*:\n{x_star}")
         print(f"\nf(x*) = {f_in_x_star}")
         print(f"\nx*-x_0:\n{x_star - self.x_0}")
-        print(f"\n||x*-x_0|| = {np.linalg.norm(x_star - self.x_0)}\n")
+        print(f"\n||x*-x_0|| = {error(x_star - self.x_0)}\n")
 
         for i in range(8):
+            print('======================')
             self.sign = -self.sign
             x_k = x_.copy()
             x_k[i // 2][0] += self.sign * self.a
-            print(f"\nНачальное приближение {i + 1}:\n{x_k[0:-1]}")
+            print(f"\n{i + 1}:\n{x_k[0:-1]} <-- Начальное приближение\n")
             result = self.newton(x_k)
-            print(f"Значение x: {result[0:-1]}")
-            print(f"Значение y = {result[4][0]}")
-            print(f"Значение функции = {self.f(result[0:-1])}\n")
+            print(f"{result[0:-1]} <-- Значение x\n")
+            print(f"{result[4][0]} <-- Значение y\n")
+            print(f"{self.f(result[0:-1])} <-- Значение функции\n")
 
 
 if __name__ == "__main__":
-    s_l = Solution(5, 4, 3, 1)
-    s_l.start_lab()
+    Solution(a=1, r=2, y=3, sign=1).start_lab()
